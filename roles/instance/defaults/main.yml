@@ -52,6 +52,7 @@ azure_ssh_public_key_list:
 #  define_hostname: true
 #  update_etchosts_localhost: false
 #  resource_group: "{{ azure_resourcegroup }}"
+#  instance_infra_provider: azure
 #  instance_os_type: Linux
 #  os_disk_size_gb: 64
 #  public_ip_allocation_method: Static
@@ -81,6 +82,7 @@ azure_ssh_public_key_list:
 #  define_hostname: true
 #  update_etchosts_localhost: false
 #  resource_group: "{{ azure_resourcegroup }}"
+#  instance_infra_provider: azure
 #  instance_os_type: Windows
 #  os_disk_size_gb: 128
 #  public_ip_allocation_method: Static
