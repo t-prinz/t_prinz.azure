@@ -81,24 +81,24 @@
   debug:
     msg: "FQDN is {{ fqdn }}"
 
-- name: Define common Linux host variables
-  set_fact:
-    common_linux_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_ssh_private_key_file={{ ssh_private_key_file }}"
+#- name: Define common Linux host variables
+#  set_fact:
+#    common_linux_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_ssh_private_key_file={{ ssh_private_key_file }}"
 
-- name: Print common Linux host variables
-  debug:
-    var: common_linux_hostvars
-    verbosity: 1
+#- name: Print common Linux host variables
+#  debug:
+#    var: common_linux_hostvars
+#    verbosity: 1
 
-- name: Define common Windows host variables
-  set_fact:
-    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5986 ansible_winrm_server_cert_validation=ignore"
-#    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5985 ansible_winrm_server_cert_validation=ignore"
+#- name: Define common Windows host variables
+#  set_fact:
+#    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5986 ansible_winrm_server_cert_validation=ignore"
+##    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5985 ansible_winrm_server_cert_validation=ignore"
 
-- name: Print common Windows host variables
-  debug:
-    var: common_windows_hostvars
-    verbosity: 1
+#- name: Print common Windows host variables
+#  debug:
+#    var: common_windows_hostvars
+#    verbosity: 1
 
 #- name: Add new instance to host group, if the instance has been marked as having changed
 #  add_host:

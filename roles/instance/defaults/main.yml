@@ -47,7 +47,7 @@ azure_ssh_public_key_list:
 
 #azure_instance_annotated_name: "{{ azure_base_name }}-linuxsvr"
 
-#azure_instance_info:
+#azure_instance:
 #  name: "{{ azure_instance_annotated_name }}"
 #  define_hostname: true
 #  update_etchosts_localhost: false
@@ -76,7 +76,7 @@ azure_ssh_public_key_list:
 
 #azure_instance_annotated_name: "{{ azure_base_name }}-winsvr"
 
-#azure_instance_info:
+#azure_instance:
 #  name: "{{ azure_instance_annotated_name }}"
 #  define_hostname: true
 #  update_etchosts_localhost: false
