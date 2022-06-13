@@ -5,6 +5,10 @@
 #    AZURE_SECRET: "{{ azure_password }}"
 #    AZURE_TENANT: "{{ azure_tenant_id }}"
 
+- name: print
+  debug:
+    var: azure_subscription_id
+
 - name: Create resource group
   azure.azcollection.azure_rm_resourcegroup:
     name: "{{ azure_resourcegroup }}"
