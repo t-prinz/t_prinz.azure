@@ -5,34 +5,19 @@
 #    AZURE_SECRET: "{{ azure_password }}"
 #    AZURE_TENANT: "{{ azure_tenant_id }}"
 
-#  - name: cleanout previous dynamic inventory file
-#    file:
-#      path: "{{ azure_inventory_file }}"
-#      state: absent
-#    when: azure_inventory_file is defined
-
-  - name: Loop over the tasks file that will create the vm's
-    include_tasks: instance_create_tasks.yml
-    loop: "{{ azure_virtualmachines }}"
-    loop_control:
-      label: "{{ outer_item.name }}"
-      loop_var: outer_item
-
-
----
 - name: Print information about instance
   debug:
-    msg: "Provisioning instance:  {{ outer_item }}"
+    msg: "Provisioning instance:  {{ azure_instance.name }}"
 
 - name: Create virtual network interface card
   azure.azcollection.azure_rm_networkinterface:
-    resource_group: "{{ outer_item.resource_group }}"
+    resource_group: "{{ azure_instance.resource_group }}"
     name: "{{ item.name }}"
     virtual_network: "{{ azure_virtnetwork }}"
     subnet: "{{ azure_subnet }}"
     ip_configurations: "{{ item.ip_configurations }}"
     security_group: "{{ azure_securitygroup }}"
-  loop: "{{ outer_item.network_interfaces }}"
+  loop: "{{ azure_instance.network_interfaces }}"
   register: network_iface_output
 
 - name: Print network interface output
@@ -43,17 +28,17 @@
 
 - name: Create VM
   azure.azcollection.azure_rm_virtualmachine:
-    resource_group: "{{ outer_item.resource_group }}"
-    name: "{{ outer_item.name }}"
-    vm_size: "{{ outer_item.vm_size }}"
-    admin_username: "{{ outer_item.admin_username if (outer_item.admin_username is defined) else windows_admin_username }}"
-    admin_password: "{{ windows_admin_password if (outer_item.instance_os_type == 'Windows') else omit }}"
-    ssh_password_enabled: "{{ outer_item.ssh_password_enabled }}"
-    ssh_public_keys: "{{ outer_item.ssh_public_keys if (outer_item.ssh_public_keys is defined) else omit }}"
-    network_interfaces: "{{ outer_item.network_interfaces }}"
-    image: "{{ outer_item.image }}"
-    os_type: "{{ outer_item.instance_os_type }}"
-    os_disk_size_gb: "{{ outer_item.os_disk_size_gb }}"
+    resource_group: "{{ azure_instance.resource_group }}"
+    name: "{{ azure_instance.name }}"
+    vm_size: "{{ azure_instance.vm_size }}"
+    admin_username: "{{ azure_instance.admin_username }}"
+    admin_password: "{{ azure_windows_ansible_password if (azure_instance.instance_os_type == 'Windows') else omit }}"
+    ssh_password_enabled: "{{ azure_instance.ssh_password_enabled }}"
+    ssh_public_keys: "{{ azure_instance.ssh_public_keys if (azure_instance.ssh_public_keys is defined) else omit }}"
+    network_interfaces: "{{ azure_instance.network_interfaces }}"
+    image: "{{ azure_instance.image }}"
+    os_type: "{{ azure_instance.instance_os_type }}"
+    os_disk_size_gb: "{{ azure_instance.os_disk_size_gb }}"
     state: present
     started: yes
   register: instance_info
@@ -61,14 +46,14 @@
 - name: Create Azure VM Extension to enable HTTPS WinRM listener
   azure.azcollection.azure_rm_virtualmachineextension:
     name: winrm-extension
-    resource_group: "{{ outer_item.resource_group }}"
-    virtual_machine_name: "{{ outer_item.name }}"
+    resource_group: "{{ azure_instance.resource_group }}"
+    virtual_machine_name: "{{ azure_instance.name }}"
     publisher: Microsoft.Compute
     virtual_machine_extension_type: CustomScriptExtension
     type_handler_version: '1.9'
     settings: '{"fileUris": ["https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"],"commandToExecute": "powershell -ExecutionPolicy Unrestricted -File ConfigureRemotingForAnsible.ps1"}'
     auto_upgrade_minor_version: true
-  when: outer_item.instance_os_type == 'Windows'
+  when: azure_instance.instance_os_type == 'Windows'
 
 - name: Print instance_info
   debug:
@@ -80,16 +65,16 @@
 
 - name: Print public IP address
   debug:
-    msg: "Instance {{ outer_item.name }} has public address:  {{ instance_publicip }}"
+    msg: "Instance {{ azure_instance.name }} has public address:  {{ instance_publicip }}"
 
 - name: Construct fqdn using the nip.io naming scheme
   set_fact:
-    fqdn: "{{ outer_item.name }}-{{ instance_publicip | regex_replace('\\.', '-') }}.{{ domain_name }}"
+    fqdn: "{{ azure_instance.name }}-{{ instance_publicip | regex_replace('\\.', '-') }}.{{ domain_name }}"
   when: use_nip_io_naming_scheme
 
 - name: Construct fqdn by adding the domain name
   set_fact:
-    fqdn: "{{ outer_item.name }}.{{ domain_name }}"
+    fqdn: "{{ azure_instance.name }}.{{ domain_name }}"
   when: not use_nip_io_naming_scheme
 
 - name: Print FQDN
@@ -98,7 +83,7 @@
 
 - name: Define common Linux host variables
   set_fact:
-    common_linux_hostvars: "ansible_user={{ outer_item.admin_username }} ansible_ssh_private_key_file={{ ssh_private_key_file }}"
+    common_linux_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_ssh_private_key_file={{ ssh_private_key_file }}"
 
 - name: Print common Linux host variables
   debug:
@@ -107,46 +92,46 @@
 
 - name: Define common Windows host variables
   set_fact:
-    common_windows_hostvars: "ansible_user={{ outer_item.admin_username }} ansible_password={{ windows_admin_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5986 ansible_winrm_server_cert_validation=ignore"
-#    common_windows_hostvars: "ansible_user={{ outer_item.admin_username }} ansible_password={{ windows_admin_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5985 ansible_winrm_server_cert_validation=ignore"
+    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5986 ansible_winrm_server_cert_validation=ignore"
+#    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5985 ansible_winrm_server_cert_validation=ignore"
 
 - name: Print common Windows host variables
   debug:
     var: common_windows_hostvars
     verbosity: 1
 
-- name: Add new instance to host group, if the instance has been marked as having changed
-  add_host:
-    hostname: "{{ fqdn }}"
-    groupname: launched
-    ansible_ssh_extra_args: "{{ ('-o StrictHostKeyChecking=no') if (outer_item.instance_os_type == 'Linux') else omit }}"
-#    ansible_user: "{{ outer_item.admin_username if (outer_item.instance_os_type == 'Linux') else windows_admin_username }}"
-    ansible_user: "{{ outer_item.admin_username }}"
-    ansible_ssh_private_key_file: "{{ ssh_private_key_file if (outer_item.instance_os_type == 'Linux') else omit }}"
-    ansible_password: "{{ windows_admin_password if (outer_item.instance_os_type == 'Windows') else omit }}"
-    ansible_connection: "{{ ('winrm') if (outer_item.instance_os_type == 'Windows') else omit }}"
-    ansible_winrm_transport: "{{ ('ntlm') if (outer_item.instance_os_type == 'Windows') else omit }}"
-    ansible_port: "{{ ('5986') if (outer_item.instance_os_type == 'Windows') else omit }}"
-#    ansible_port: "{{ ('5985') if (outer_item.instance_os_type == 'Windows') else omit }}"
-    specified_os_type: "{{ outer_item.instance_os_type }}"
-    define_hostname: "{{ outer_item.define_hostname }}"
-    update_etchosts_localhost: "{{ outer_item.update_etchosts_localhost }}"
-    ansible_winrm_server_cert_validation: ignore
-#  when: instance_info.changed
+#- name: Add new instance to host group, if the instance has been marked as having changed
+#  add_host:
+#    hostname: "{{ fqdn }}"
+#    groupname: launched
+#    ansible_ssh_extra_args: "{{ ('-o StrictHostKeyChecking=no') if (azure_instance.instance_os_type == 'Linux') else omit }}"
+##    ansible_user: "{{ azure_instance.admin_username if (azure_instance.instance_os_type == 'Linux') else windows_admin_username }}"
+#    ansible_user: "{{ azure_instance.admin_username }}"
+#    ansible_ssh_private_key_file: "{{ ssh_private_key_file if (azure_instance.instance_os_type == 'Linux') else omit }}"
+#    ansible_password: "{{ azure_windows_ansible_password if (azure_instance.instance_os_type == 'Windows') else omit }}"
+#    ansible_connection: "{{ ('winrm') if (azure_instance.instance_os_type == 'Windows') else omit }}"
+#    ansible_winrm_transport: "{{ ('ntlm') if (azure_instance.instance_os_type == 'Windows') else omit }}"
+#    ansible_port: "{{ ('5986') if (azure_instance.instance_os_type == 'Windows') else omit }}"
+##    ansible_port: "{{ ('5985') if (azure_instance.instance_os_type == 'Windows') else omit }}"
+#    specified_os_type: "{{ azure_instance.instance_os_type }}"
+#    define_hostname: "{{ azure_instance.define_hostname }}"
+#    update_etchosts_localhost: "{{ azure_instance.update_etchosts_localhost }}"
+#    ansible_winrm_server_cert_validation: ignore
+##  when: instance_info.changed
 
-- name: add instances to the dynamic inventory file
-  lineinfile:
-    create: True
-    line: "{{ outer_item.name }} ansible_host={{ fqdn }} specified_os_type={{ outer_item.instance_os_type }} {{ common_linux_hostvars if (outer_item.instance_os_type == 'Linux') else common_windows_hostvars }}"
-    mode: "0644"
-    path: "{{ azure_inventory_file }}"
-    state: present
-  when: azure_inventory_file is defined
+#- name: add instances to the dynamic inventory file
+#  lineinfile:
+#    create: True
+#    line: "{{ azure_instance.name }} ansible_host={{ fqdn }} specified_os_type={{ azure_instance.instance_os_type }} {{ common_linux_hostvars if (azure_instance.instance_os_type == 'Linux') else common_windows_hostvars }}"
+#    mode: "0644"
+#    path: "{{ azure_inventory_file }}"
+#    state: present
+#  when: azure_inventory_file is defined
 
 - name: Delete Azure VM Extension to enable HTTPS WinRM listener
   azure_rm_virtualmachineextension:
     name: winrm-extension
-    resource_group: "{{ outer_item.resource_group }}"
-    virtual_machine_name: "{{ outer_item.name }}"
+    resource_group: "{{ azure_instance.resource_group }}"
+    virtual_machine_name: "{{ azure_instance.name }}"
     state: absent
-  when: outer_item.instance_os_type == 'Windows'
+  when: azure_instance.instance_os_type == 'Windows'
