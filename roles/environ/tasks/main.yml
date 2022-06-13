@@ -1,0 +1,12 @@
+---
+# tasks file for environ
+
+- name: Ensure the Azure environment is created
+  include_tasks:
+    file: env_create.yml
+  when: (azure_env_operation | lower) == "create"
+
+- name: Ensure the Azure environment is deleted
+  include_tasks:
+    file: env_delete.yml
+  when: (azure_env_operation | lower) == "delete"

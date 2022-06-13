@@ -1,0 +1,101 @@
+---
+# defaults file for instance
+
+# This specifies what the role should do; the choices are
+#
+#   create: creates the instance
+#   start: starts the instance
+#   stop: stops the instance
+#   delete: deletes the instance
+
+azure_instance_operation: ""
+
+######## These are the same variables used by the environ role - start ########
+
+# Azure credential information
+
+########azure_subscription_id: ""
+########azure_client_id: ""
+########azure_password: ""
+########azure_tenant_id: ""
+########azure_resourcegroup: ""
+
+# This is used to prefix several of the Azure resource names (see below).
+
+########azure_base_name: az
+
+# Azure network information
+
+########azure_virtnetwork: "{{ azure_base_name }}-virtnet"
+
+########azure_subnet: "{{ azure_base_name }}-subnet"
+
+######## These are the same variables used by the environ role - end ########
+
+azure_linux_ansible_user: azureuser
+
+azure_windows_ansible_user: azureuser
+azure_windows_ansible_password: ""
+
+azure_ssh_public_key_file: "path-to/id_rsa.pub"
+azure_ssh_keypair_key_data: "{{ lookup('file', azure_ssh_public_key_file) }}"
+azure_ssh_public_key_list:
+  - path: "/home/{{ azure_linux_ansible_user }}/.ssh/authorized_keys"
+    key_data: "{{ azure_ssh_keypair_key_data }}"
+
+# Sample Linux instance
+
+#azure_instance_annotated_name: "{{ azure_base_name }}-linuxsvr"
+
+#azure_instance_info:
+#  name: "{{ azure_instance_annotated_name }}"
+#  define_hostname: true
+#  update_etchosts_localhost: false
+#  resource_group: "{{ azure_resourcegroup }}"
+#  instance_os_type: Linux
+#  os_disk_size_gb: 64
+#  public_ip_allocation_method: Static
+#  vm_size: Standard_A1_v2
+#  admin_username: "{{ azure_linux_ansible_user }}"
+#  ssh_password_enabled: false
+#  ssh_public_keys: "{{ azure_ssh_public_key_list }}"
+#  image:
+#    offer: RHEL
+#    publisher: RedHat
+#    sku: '8-LVM'
+#    version: "8.6.2022051813"
+#  network_interfaces:
+#    - name: "{{ azure_instance_annotated_name }}-nic1"
+#      ip_configurations:
+#        - name: "{{ azure_instance_annotated_name }}-nic1"
+#          primary: True
+#          public_ip_address_name: "{{ azure_instance_annotated_name }}-nic1-public_ip"
+#          public_ip_allocation_method: Static
+
+# Sample Windows instance
+
+#azure_instance_annotated_name: "{{ azure_base_name }}-winsvr"
+
+#azure_instance_info:
+#  name: "{{ azure_instance_annotated_name }}"
+#  define_hostname: true
+#  update_etchosts_localhost: false
+#  resource_group: "{{ azure_resourcegroup }}"
+#  instance_os_type: Windows
+#  os_disk_size_gb: 128
+#  public_ip_allocation_method: Static
+#  vm_size: Standard_A1_v2
+#  admin_username: "{{ azure_windows_ansible_user }}"
+#  ssh_password_enabled: false
+#  image:
+#    offer: "WindowsServer"
+#    publisher: "MicrosoftWindowsServer"
+#    sku: "2019-Datacenter"
+#    version: latest
+#  network_interfaces:
+#    - name: "{{ azure_instance_annotated_name }}-nic1"
+#      ip_configurations:
+#        - name: "{{ azure_instance_annotated_name }}-nic1"
+#          primary: True
+#          public_ip_address_name: "{{ azure_instance_annotated_name }}-nic1-public_ip"
+#          public_ip_allocation_method: Static

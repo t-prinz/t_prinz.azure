@@ -1,0 +1,22 @@
+---
+# tasks file for instance
+
+- name: Ensure the instance is created
+  include_tasks:
+    file: instance_create.yml
+  when: (azure_instance_operation | lower) == "create"
+
+- name: Ensure the instance is stopped
+  include_tasks:
+    file: instance_stop.yml
+  when: (azure_instance_operation | lower) == "stop"
+
+- name: Ensure the instance is started
+  include_tasks:
+    file: instance_start.yml
+  when: (azure_instance_operation | lower) == "start"
+
+- name: Ensure the instance is deleted
+  include_tasks:
+    file: instance_delete.yml
+  when: (azure_instance_operation | lower) == "delete"
