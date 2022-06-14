@@ -1,0 +1,25 @@
+---
+#  environment:
+#    AZURE_SUBSCRIPTION_ID: "{{ azure_subscription_id }}"
+#    AZURE_CLIENT_ID: "{{ azure_client_id }}"
+#    AZURE_SECRET: "{{ azure_password }}"
+#    AZURE_TENANT: "{{ azure_tenant_id }}"
+
+- name: delete the Network Security Group
+  azure.azcollection.azure_rm_securitygroup:
+    resource_group: "{{ azure_resourcegroup }}"
+    name: "{{ azure_securitygroup }}"
+    state: absent
+
+- name: delete the subnet
+  azure.azcollection.azure_rm_subnet:
+    resource_group: "{{ azure_resourcegroup }}"
+    name: "{{ azure_subnet }}"
+    virtual_network: "{{ azure_virtnetwork }}"
+    state: absent
+
+- name: delete the virtual network
+  azure.azcollection.azure_rm_virtualnetwork:
+    resource_group: "{{ azure_resourcegroup }}"
+    name: "{{ azure_virtnetwork }}"
+    state: absent
