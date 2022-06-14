@@ -1,0 +1,13 @@
+---
+#  environment:
+#    AZURE_SUBSCRIPTION_ID: "{{ azure_subscription_id }}"
+#    AZURE_CLIENT_ID: "{{ azure_client_id }}"
+#    AZURE_SECRET: "{{ azure_password }}"
+#    AZURE_TENANT: "{{ azure_tenant_id }}"
+
+- name: start instances
+  azure.azcollection.azure_rm_virtualmachine:
+    resource_group: "{{ azure_instance.resource_group }}"
+    name: "{{ azure_instance.name }}"
+    state: present
+    started: yes
