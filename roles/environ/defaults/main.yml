@@ -5,7 +5,7 @@
 
 azure_subscription_id: ""
 azure_client_id: ""
-azure_password: ""
+azure_secret: ""
 azure_tenant_id: ""
 azure_resourcegroup: ""
 
@@ -22,19 +22,19 @@ azure_env_operation: ""
 
 # This is used to prefix several of the Azure resource names (see below).
 
-azure_base_name: az
+azure_resource_name_prefix: az
 
 # Azure network information
 
-azure_virtnetwork: "{{ azure_base_name }}-virtnet"
+azure_virtnetwork: "{{ azure_resource_name_prefix }}-virtnet"
 azure_virtnetwork_prefixes: "10.0.0.0/16"
 
-azure_subnet: "{{ azure_base_name }}-subnet"
+azure_subnet: "{{ azure_resource_name_prefix }}-subnet"
 azure_subnet_prefix: "10.0.1.0/24"
 
 # This defines the security group rules to be applied.
 
-azure_securitygroup: "{{ azure_base_name }}-networksecuritygroup"
+azure_securitygroup: "{{ azure_resource_name_prefix }}-networksecuritygroup"
 azure_securitygroup_rules:
   - name: SSH
     protocol: Tcp

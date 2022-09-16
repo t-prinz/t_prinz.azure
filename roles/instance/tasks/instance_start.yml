@@ -2,7 +2,7 @@
 #  environment:
 #    AZURE_SUBSCRIPTION_ID: "{{ azure_subscription_id }}"
 #    AZURE_CLIENT_ID: "{{ azure_client_id }}"
-#    AZURE_SECRET: "{{ azure_password }}"
+#    AZURE_SECRET: "{{ azure_secret }}"
 #    AZURE_TENANT: "{{ azure_tenant_id }}"
 
 - name: start instances

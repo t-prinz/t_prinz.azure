@@ -2,7 +2,7 @@
 #  environment:
 #    AZURE_SUBSCRIPTION_ID: "{{ azure_subscription_id }}"
 #    AZURE_CLIENT_ID: "{{ azure_client_id }}"
-#    AZURE_SECRET: "{{ azure_password }}"
+#    AZURE_SECRET: "{{ azure_secret }}"
 #    AZURE_TENANT: "{{ azure_tenant_id }}"
 
 - name: Print information about instance
@@ -32,15 +32,16 @@
     name: "{{ azure_instance.name }}"
     vm_size: "{{ azure_instance.vm_size }}"
     admin_username: "{{ azure_instance.admin_username }}"
-    admin_password: "{{ azure_windows_ansible_password if (azure_instance.instance_os_type == 'Windows') else omit }}"
+    admin_password: "{{ azure_windows_ansible_password if (azure_instance.azure_tags.instance_hvar_os_type == 'Windows') else omit }}"
     ssh_password_enabled: "{{ azure_instance.ssh_password_enabled }}"
     ssh_public_keys: "{{ azure_instance.ssh_public_keys if (azure_instance.ssh_public_keys is defined) else omit }}"
     network_interfaces: "{{ azure_instance.network_interfaces }}"
     image: "{{ azure_instance.image }}"
-    os_type: "{{ azure_instance.instance_os_type }}"
+    os_type: "{{ azure_instance.azure_tags.instance_hvar_os_type }}"
     os_disk_size_gb: "{{ azure_instance.os_disk_size_gb }}"
     state: present
     started: yes
+    tags: "{{ azure_instance.azure_tags }}"
   register: instance_info
 
 - name: Create Azure VM Extension to enable HTTPS WinRM listener
@@ -53,7 +54,7 @@
     type_handler_version: '1.9'
     settings: '{"fileUris": ["https://raw.githubusercontent.com/ansible/ansible/devel/examples/scripts/ConfigureRemotingForAnsible.ps1"],"commandToExecute": "powershell -ExecutionPolicy Unrestricted -File ConfigureRemotingForAnsible.ps1"}'
     auto_upgrade_minor_version: true
-  when: azure_instance.instance_os_type == 'Windows'
+  when: azure_instance.azure_tags.instance_hvar_os_type == 'Windows'
 
 - name: Print instance_info
   debug:
@@ -81,57 +82,10 @@
   debug:
     msg: "FQDN is {{ fqdn }}"
 
-#- name: Define common Linux host variables
-#  set_fact:
-#    common_linux_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_ssh_private_key_file={{ ssh_private_key_file }}"
-
-#- name: Print common Linux host variables
-#  debug:
-#    var: common_linux_hostvars
-#    verbosity: 1
-
-#- name: Define common Windows host variables
-#  set_fact:
-#    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5986 ansible_winrm_server_cert_validation=ignore"
-##    common_windows_hostvars: "ansible_user={{ azure_instance.admin_username }} ansible_password={{ azure_windows_ansible_password }} ansible_connection=winrm ansible_winrm_transport=ntlm ansible_port=5985 ansible_winrm_server_cert_validation=ignore"
-
-#- name: Print common Windows host variables
-#  debug:
-#    var: common_windows_hostvars
-#    verbosity: 1
-
-#- name: Add new instance to host group, if the instance has been marked as having changed
-#  add_host:
-#    hostname: "{{ fqdn }}"
-#    groupname: launched
-#    ansible_ssh_extra_args: "{{ ('-o StrictHostKeyChecking=no') if (azure_instance.instance_os_type == 'Linux') else omit }}"
-##    ansible_user: "{{ azure_instance.admin_username if (azure_instance.instance_os_type == 'Linux') else windows_admin_username }}"
-#    ansible_user: "{{ azure_instance.admin_username }}"
-#    ansible_ssh_private_key_file: "{{ ssh_private_key_file if (azure_instance.instance_os_type == 'Linux') else omit }}"
-#    ansible_password: "{{ azure_windows_ansible_password if (azure_instance.instance_os_type == 'Windows') else omit }}"
-#    ansible_connection: "{{ ('winrm') if (azure_instance.instance_os_type == 'Windows') else omit }}"
-#    ansible_winrm_transport: "{{ ('ntlm') if (azure_instance.instance_os_type == 'Windows') else omit }}"
-#    ansible_port: "{{ ('5986') if (azure_instance.instance_os_type == 'Windows') else omit }}"
-##    ansible_port: "{{ ('5985') if (azure_instance.instance_os_type == 'Windows') else omit }}"
-#    specified_os_type: "{{ azure_instance.instance_os_type }}"
-#    define_hostname: "{{ azure_instance.define_hostname }}"
-#    update_etchosts_localhost: "{{ azure_instance.update_etchosts_localhost }}"
-#    ansible_winrm_server_cert_validation: ignore
-##  when: instance_info.changed
-
-#- name: add instances to the dynamic inventory file
-#  lineinfile:
-#    create: True
-#    line: "{{ azure_instance.name }} ansible_host={{ fqdn }} specified_os_type={{ azure_instance.instance_os_type }} {{ common_linux_hostvars if (azure_instance.instance_os_type == 'Linux') else common_windows_hostvars }}"
-#    mode: "0644"
-#    path: "{{ azure_inventory_file }}"
-#    state: present
-#  when: azure_inventory_file is defined
-
 - name: Delete Azure VM Extension to enable HTTPS WinRM listener
   azure_rm_virtualmachineextension:
     name: winrm-extension
     resource_group: "{{ azure_instance.resource_group }}"
     virtual_machine_name: "{{ azure_instance.name }}"
     state: absent
-  when: azure_instance.instance_os_type == 'Windows'
+  when: azure_instance.azure_tags.instance_hvar_os_type == 'Windows'

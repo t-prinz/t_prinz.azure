@@ -16,19 +16,19 @@ azure_instance_operation: ""
 
 ########azure_subscription_id: ""
 ########azure_client_id: ""
-########azure_password: ""
+########azure_secret: ""
 ########azure_tenant_id: ""
 ########azure_resourcegroup: ""
 
 # This is used to prefix several of the Azure resource names (see below).
 
-########azure_base_name: az
+########azure_resource_name_prefix: az
 
 # Azure network information
 
-########azure_virtnetwork: "{{ azure_base_name }}-virtnet"
+########azure_virtnetwork: "{{ azure_resource_name_prefix }}-virtnet"
 
-########azure_subnet: "{{ azure_base_name }}-subnet"
+########azure_subnet: "{{ azure_resource_name_prefix }}-subnet"
 
 ######## These are the same variables used by the environ role - end ########
 
@@ -45,17 +45,19 @@ azure_ssh_public_key_list:
 
 # Sample Linux instance
 
-#azure_instance_annotated_name: "{{ azure_base_name }}-linuxsvr"
+#file_scoped_basename: mylinuxsvr
 
 #azure_instance:
-#  name: "{{ azure_instance_annotated_name }}"
-#  define_hostname: true
-#  update_etchosts_localhost: false
+#  azure_tags:
+#    instance_hvar_os_type: Linux
+#    instance_hvar_basename: "{{ file_scoped_basename }}"
+#    instance_hvar_infra_provider: azure
+#    instance_hvar_define_hostname: true
+#    instance_hvar_update_etchosts_localhost: false
+#    instance_hvars_inventory_groups: az_aap
+#  name: "{{ azure_resource_name_prefix }}-{{ file_scoped_basename }}"
 #  resource_group: "{{ azure_resourcegroup }}"
-#  instance_infra_provider: azure
-#  instance_os_type: Linux
 #  os_disk_size_gb: 64
-#  public_ip_allocation_method: Static
 #  vm_size: Standard_A1_v2
 #  admin_username: "{{ azure_linux_ansible_user }}"
 #  ssh_password_enabled: false
@@ -66,26 +68,28 @@ azure_ssh_public_key_list:
 #    sku: '8-LVM'
 #    version: "8.6.2022051813"
 #  network_interfaces:
-#    - name: "{{ azure_instance_annotated_name }}-nic1"
+#    - name: "{{ azure_resource_name_prefix }}-{{ file_scoped_basename }}-nic1"
 #      ip_configurations:
-#        - name: "{{ azure_instance_annotated_name }}-nic1"
+#        - name: "{{ azure_resource_name_prefix }}-{{ file_scoped_basename }}-nic1"
 #          primary: True
-#          public_ip_address_name: "{{ azure_instance_annotated_name }}-nic1-public_ip"
+#          public_ip_address_name: "{{ azure_resource_name_prefix }}-{{ file_scoped_basename }}-nic1-public_ip"
 #          public_ip_allocation_method: Static
 
 # Sample Windows instance
 
-#azure_instance_annotated_name: "{{ azure_base_name }}-winsvr"
+#file_scoped_basename: mylinuxsvr
 
 #azure_instance:
+#  azure_tags:
+#    instance_hvar_os_type: Windows
+#    instance_hvar_basename: "{{ file_scoped_basename }}"
+#    instance_hvar_infra_provider: azure
+#    instance_hvar_define_hostname: true
+#    instance_hvar_update_etchosts_localhost: false
+#    instance_hvars_inventory_groups: az_aap
 #  name: "{{ azure_instance_annotated_name }}"
-#  define_hostname: true
-#  update_etchosts_localhost: false
 #  resource_group: "{{ azure_resourcegroup }}"
-#  instance_infra_provider: azure
-#  instance_os_type: Windows
 #  os_disk_size_gb: 128
-#  public_ip_allocation_method: Static
 #  vm_size: Standard_A1_v2
 #  admin_username: "{{ azure_windows_ansible_user }}"
 #  ssh_password_enabled: false
@@ -95,9 +99,9 @@ azure_ssh_public_key_list:
 #    sku: "2019-Datacenter"
 #    version: latest
 #  network_interfaces:
-#    - name: "{{ azure_instance_annotated_name }}-nic1"
+#    - name: "{{ azure_resource_name_prefix }}-{{ file_scoped_basename }}-nic1"
 #      ip_configurations:
-#        - name: "{{ azure_instance_annotated_name }}-nic1"
+#        - name: "{{ azure_resource_name_prefix }}-{{ file_scoped_basename }}-nic1"
 #          primary: True
-#          public_ip_address_name: "{{ azure_instance_annotated_name }}-nic1-public_ip"
+#          public_ip_address_name: "{{ azure_resource_name_prefix }}-{{ file_scoped_basename }}-nic1-public_ip"
 #          public_ip_allocation_method: Static
