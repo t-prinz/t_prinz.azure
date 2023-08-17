@@ -9,10 +9,10 @@
   debug:
     var: azure_subscription_id
 
-- name: Create resource group
-  azure.azcollection.azure_rm_resourcegroup:
-    name: "{{ azure_resourcegroup }}"
-    location: "{{ azure_location }}"
+#- name: Create resource group
+#  azure.azcollection.azure_rm_resourcegroup:
+#    name: "{{ azure_resourcegroup }}"
+#    location: "{{ azure_location }}"
 
 - name: Create virtual network
   azure.azcollection.azure_rm_virtualnetwork:
