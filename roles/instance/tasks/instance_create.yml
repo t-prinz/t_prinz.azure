@@ -56,9 +56,14 @@
     auto_upgrade_minor_version: true
   when: azure_instance.azure_tags.instance_hvar_os_type == 'Windows'
 
-- name: Print instance_info
+- name: Print instance_info.changed
   debug:
     var: instance_info.changed
+
+- name: Print instance_info
+  debug:
+    var: instance_info
+    verbosity: 1
 
 - name: Extract public IP address
   set_fact:
