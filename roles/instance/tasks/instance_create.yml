@@ -65,10 +65,25 @@
     var: instance_info
     verbosity: 1
 
+- name: Obtain the public IP address
+  azure.azcollection.azure_rm_publicipaddress_info:
+    name: "{{ azure_instance.network_interfaces[0].ip_configurations[0].public_ip_address_name }}"
+    resource_group: "{{ azure_instance.resource_group }}"
+  register: public_ip_info
+
+- name: Print public_ip_info
+  debug:
+    msg: "Public IP address is {{ public_ip_info.publicipaddresses[0].ip_address }}"
+    verbosity: 1
+
 - name: Extract public IP address
   set_fact:
-    instance_publicip: "{{ instance_info.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+    instance_publicip: "{{ public_ip_info.publicipaddresses[0].ip_address }}"
 
+#- name: Extract public IP address
+#  set_fact:
+#    instance_publicip: "{{ instance_info.ansible_facts.azure_vm.properties.networkProfile.networkInterfaces[0].properties.ipConfigurations[0].properties.publicIPAddress.properties.ipAddress }}"
+#
 - name: Print public IP address
   debug:
     msg: "Instance {{ azure_instance.name }} has public address:  {{ instance_publicip }}"
